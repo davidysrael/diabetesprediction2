@@ -97,10 +97,13 @@ c4.metric("HbA1c", hba1c)
 with st.expander("📏 BMI Calculator"):
   weight = st.number_input("Weight (kg)", min_value=(1.0), max_value=(300.0), value=(70.0), key=("bmi_w"))
   height = st.number_input("Height (cm)", min_value=(30.0), max_value=(250.0), value=(170.0), key=("bmi_h"))
+
+  if ("bmi_calc_value" not in st.session_state):
+    st.session_state.bmi_calc_value = None
+
   if (st.button("Compute BMI", key=("btn_bmi"))):
     bmi_temp = weight / ((height / 100) ** 2)
     st.session_state.bmi_calc_value = round(bmi_temp, 2)
-    st.metric("Calculated BMI", f"{bmi_temp:.2f}")
 
 bmi = st.session_state.bmi_calc_value
 
