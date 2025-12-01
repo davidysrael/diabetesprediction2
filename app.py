@@ -8,6 +8,8 @@ import matplotlib.pyplot as plt
 import base64
 import pandas as pd
 import os
+import analytics
+
 
 # Load ML assets
 model = joblib.load("rf_diabetes_model.pkl")
@@ -84,12 +86,14 @@ st.write("Hi, Dr. Gary Glucose online. I am an AI diabetes risk scanner tuned fo
 
 # Glossary
 with st.expander("🧾 PH Medical Glossary"):
-    st.write("""
-    **HbA1c** — measures average blood sugar in the last 2–3 months.
-    **Glucose mg/dL** — current blood sugar concentration.
-    **BMI** — body mass index based on height and weight.
-    **Hypertension** — high blood pressure, a diabetes risk factor.
-    """)
+    st.write(
+        "**HbA1c** — measures average blood sugar in the last 2–3 months.\n"
+        "**Glucose mg/dL** — current blood sugar concentration.\n"
+        "**BMI** — body mass index based on height and weight.\n"
+        "**Hypertension** — high blood pressure, a diabetes risk factor.\n"
+        "**Heart Disease** — a condition affecting the heart, increasing diabetes risk and complications."
+    )
+
 
 # ----- INPUTS -----
 gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
