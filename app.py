@@ -22,7 +22,7 @@ def load_bg(path):
 BG_PATH = r"main/Welcome to BloodBeaconPH.png"
 bg_base64 = load_bg(BG_PATH)
 
-# Inject background + FORCE REMOVE numeric input type so browser NEVER spawns spinner
+# Inject background + force remove numeric spinner UI
 st.markdown(
   f"""
   <style>
@@ -33,15 +33,12 @@ st.markdown(
       background-repeat: no-repeat;
       background-attachment: fixed;
     }}
-
     .block-container {{
       background-color: rgba(0,0,0,0.12);
       border-radius: 2rem;
       padding: 2rem;
       backdrop-filter: blur(6px);
     }}
-
-    /* Completely kill number input spinner UI */
     input[type="number"] {{
       all: unset !important;
       display: block;
@@ -85,9 +82,10 @@ with st.sidebar:
   Passionate about diagnostics and preventive healthcare.
   """)
 
+# ✅ HEADER RESTORED & UPDATED
 # Header
 st.title("🩸 BloodBeaconPH")
-st.write("Dr. Gary Glucose online. Hematology sensors primed and awaiting input.")
+st.write("Dr. Gary Glucose at your service. I am a Machine Learning powered system for predicting your risk of diabetes configured for PH Clinical trends.")
 
 # PH glossary
 with st.expander("🧾 PH Medical Glossary"):
@@ -104,11 +102,9 @@ st.subheader("📏 BMI Calculator")
 if ("bmi_calc_value" not in st.session_state):
   st.session_state.bmi_calc_value = None
 
-# Replacing number_input button UI by taking clean decimals manually
 weight = st.text_input("Weight (kg)", value=("70.00"))
 height = st.text_input("Height (cm)", value=("170.00"))
 
-# Convert to float safely, enforce 2 decimals
 try:
   weight = round(float(weight), 2)
 except:
@@ -127,7 +123,7 @@ if (st.button("Compute BMI", key=("btn_bmi"))):
 bmi = st.session_state.bmi_calc_value
 
 # Inputs
-st.subheader("🧬 Patient Inputs")
+st.subheader("🧬 Patient Biomarkers")
 
 gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
 age = st.text_input("Age (years)", value=("30.00"))
@@ -137,7 +133,6 @@ glucose = st.text_input("Blood Glucose (mg/dL)", value=("100.00"))
 hypertension = st.selectbox("Hypertension [0=none, 1=yes]", [0, 1], key=("input_htn_main"))
 heart_disease = st.selectbox("Heart Disease [0=none, 1=yes]", [0, 1], key=("input_hd_main"))
 
-# Convert text decimals to float and enforce 2 decimals
 try:
   age = round(float(age), 2)
 except:
@@ -172,45 +167,65 @@ gender_encoded = 1 if (gender == "Male") else 0
 X = np.array([[gender_encoded, age, hypertension, heart_disease, bmi, hba1c, glucose]])
 console = st.empty()
 
-# Prediction
+# ✅ BEACON SCAN RESTORED (didn't remove, only input type changed so no spinners ever exist)
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
   st.subheader("📊 Biomarker Breakdown")
 
   values = [age/80 * 100, bmi/40 * 100, glucose/300 * 100, hba1c/9 * 100]
   labels = ["Age","BMI","Glucose","HbA1c"]
 
+  # Restore bar color logic
+  def bar_color(v):
+    if (v >= 90):
+      return "red"
+    if (v >= 80):
+      return "orangered"
+    if (v >= 70):
+      return "darkorange"
+    if (v >= 60):
+      return "orange"
+    return "gray"
+
+  colors = list(map(bar_color, values))
+
   fig, ax = plt.subplots()
   ax.bar(labels, values)
 
+  # ✅ BAR FACE COLOR RESTORED
+  for i, bar in enumerate(ax.patches):
+    bar.set_facecolor(colors[i])
+
+  # ✅ TITLE, LABELS, & GRID RESTORED (you sent this snippet, now reapplied)
   ax.set_title("PH Clinical Biomarker Levels", fontsize=(14))
   ax.set_ylabel("Risk Contribution (%)", fontsize=(12))
   ax.set_ylim(0, 110)
-  ax.grid(axis=("y"), alpha=(0.2))
+  ax.grid(axis=("y"), alpha=0.2)
 
   for i, v in enumerate(values):
-    ax.text(i, v + 2, f"{round(v,2):.2f}%", ha=("center"), fontsize=(12), weight=("bold"))
+    ax.text(i, v + 2, f"{v:.1f}%", ha=("center"), fontsize=(12), weight=("bold"))
 
   st.pyplot(fig)
 
   r_live = risk_likelihood(age, glucose, hba1c, bmi)
   st.subheader("📡 Live Risk Radar")
   st.progress(r_live)
-  st.caption(f"Current system threat index: {r_live * 100:.2f}%")
+  st.caption(f"Current system threat index: {r_live * 100:.1f}%")
 
-  console.write("Calibrating sensors...")
-  console.write("Reading biomarker matrix...")
-  console.write("Running predictive core...")
+  console.write("Calibrating hematology sensors...")
+  console.write("Reading glucose and HbA1c matrix...")
+  console.write("Firing predictive core...")
 
+  # ML inference
   X_scaled = scaler.transform(X)
   result = model.predict(X_scaled)[0]
 
   if (result == 1):
     st.error("🚨 High diabetes risk detected.")
-    console.write("Insulin resistance warning likely.")
+    console.write("A probability of insulin resistance alert.")
   else:
     st.success("✅ No high diabetes risk detected.")
     st.balloons()
-    console.write("Vitals are within optimal range, sir.")
+    console.write("All vitals optimal, sir.")
 
 # Footer
 st.write("---")
