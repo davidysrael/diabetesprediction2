@@ -8,10 +8,6 @@ import math
 import matplotlib.pyplot as plt
 import base64
 
-# Load model & scaler
-model = joblib.load("rf_diabetes_model.pkl")
-scaler = joblib.load("scaler.pkl")
-
 st.set_page_config(
   page_title="BloodBeaconPH",
   layout="centered",
@@ -26,7 +22,7 @@ def load_bg(path):
 BG_PATH = r"main/Welcome to BloodBeaconPH.png"
 bg_base64 = load_bg(BG_PATH)
 
-# Inject background and remove stepper controls
+# Inject background + FORCE REMOVE numeric input type so browser NEVER spawns spinner
 st.markdown(
   f"""
   <style>
@@ -37,6 +33,7 @@ st.markdown(
       background-repeat: no-repeat;
       background-attachment: fixed;
     }}
+
     .block-container {{
       background-color: rgba(0,0,0,0.12);
       border-radius: 2rem;
@@ -44,17 +41,28 @@ st.markdown(
       backdrop-filter: blur(6px);
     }}
 
-    /* REMOVE numeric steppers completely at input level */
+    /* Completely kill number input spinner UI */
     input[type="number"] {{
-      appearance: textfield !important;
-      pointer-events: auto;
+      all: unset !important;
+      display: block;
+      width: 100%;
+      background-color: white;
+      color: black;
+      padding: 0.4rem;
+      border-radius: 0.6rem;
+      border: 1px solid #ccc;
+      font-size: 1rem;
     }}
   </style>
   """,
   unsafe_allow_html=True,
 )
 
-# Risk heuristic function
+# Load model + scaler
+model = joblib.load("rf_diabetes_model.pkl")
+scaler = joblib.load("scaler.pkl")
+
+# Risk heuristic
 def risk_likelihood(a, g, h, b):
   score = 0
   score += 1.5 if (a > 45) else 0
@@ -67,7 +75,7 @@ def risk_likelihood(a, g, h, b):
   score += 2.5 if (b > 30) else 0
   return min(score / 12, 1.0)
 
-# Sidebar physician profile
+# Sidebar profile
 with st.sidebar:
   st.subheader("👨‍⚕️ Physician Console")
   st.write("Dr. Gary Glucose A.I")
@@ -79,7 +87,7 @@ with st.sidebar:
 
 # Header
 st.title("🩸 BloodBeaconPH")
-st.write("Hi, Dr. Gary Glucose at your service. I am a Machine Learning powered diabetes risk scanner configured for PH clinical trends.")
+st.write("Dr. Gary Glucose online. Hematology sensors primed and awaiting input.")
 
 # PH glossary
 with st.expander("🧾 PH Medical Glossary"):
@@ -96,8 +104,20 @@ st.subheader("📏 BMI Calculator")
 if ("bmi_calc_value" not in st.session_state):
   st.session_state.bmi_calc_value = None
 
-weight = st.number_input("Weight (kg)", min_value=(1.0), max_value=(300.0), value=(70.0), format=("%.2f"), key=("bmi_w"))
-height = st.number_input("Height (cm)", min_value=(30.0), max_value=(250.0), value=(170.0), format=("%.2f"), key=("bmi_h"))
+# Replacing number_input button UI by taking clean decimals manually
+weight = st.text_input("Weight (kg)", value=("70.00"))
+height = st.text_input("Height (cm)", value=("170.00"))
+
+# Convert to float safely, enforce 2 decimals
+try:
+  weight = round(float(weight), 2)
+except:
+  weight = 70.00
+
+try:
+  height = round(float(height), 2)
+except:
+  height = 170.00
 
 if (st.button("Compute BMI", key=("btn_bmi"))):
   bmi_temp = weight / ((height / 100) ** 2)
@@ -106,41 +126,53 @@ if (st.button("Compute BMI", key=("btn_bmi"))):
 
 bmi = st.session_state.bmi_calc_value
 
-# Patient Inputs
+# Inputs
 st.subheader("🧬 Patient Inputs")
 
 gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
-age = st.number_input("Age (years)", min_value=(10.0), max_value=(80.0), value=(30.0), format=("%.2f"), key=("age_input_main"))
+age = st.text_input("Age (years)", value=("30.00"))
+hba1c = st.text_input("HbA1c (%)", value=("5.50"))
+glucose = st.text_input("Blood Glucose (mg/dL)", value=("100.00"))
+
 hypertension = st.selectbox("Hypertension [0=none, 1=yes]", [0, 1], key=("input_htn_main"))
 heart_disease = st.selectbox("Heart Disease [0=none, 1=yes]", [0, 1], key=("input_hd_main"))
-hba1c = st.number_input("HbA1c (%)", min_value=(4.0), max_value=(9.0), value=(5.5), format=("%.2f"), key=("input_hba1c_main"))
-glucose = st.number_input("Blood Glucose (mg/dL)", min_value=(70.0), max_value=(300.0), value=(100.0), format=("%.2f"), key=("input_glucose_main"))
 
-# Round all numeric inputs to 2 decimals if typed beyond limit
-age = round(age, 2)
-hba1c = round(hba1c, 2)
-glucose = round(glucose, 2)
+# Convert text decimals to float and enforce 2 decimals
+try:
+  age = round(float(age), 2)
+except:
+  age = 30.00
 
-# Metrics Panel
+try:
+  hba1c = round(float(hba1c), 2)
+except:
+  hba1c = 5.50
+
+try:
+  glucose = round(float(glucose), 2)
+except:
+  glucose = 100.00
+
+# Metrics panel
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Age", age)
-c2.metric("BMI", ("--" if (bmi is None) else bmi))
-c3.metric("Glucose", glucose)
-c4.metric("HbA1c", hba1c)
+c1.metric("Age", f"{age:.2f}")
+c2.metric("BMI", ("--" if (bmi is None) else f"{bmi:.2f}"))
+c3.metric("Glucose", f"{glucose:.2f}")
+c4.metric("HbA1c", f"{hba1c:.2f}")
 
 # Validation interlock
 scan_ready = False
 if (bmi is None):
-  st.warning("🔐 Scan lock: compute BMI first to proceed.")
+  st.warning("🔐 Scan lock: BMI must be computed first.")
 else:
   scan_ready = True
 
-# Build model input matrix
+# Build ML input matrix
 gender_encoded = 1 if (gender == "Male") else 0
 X = np.array([[gender_encoded, age, hypertension, heart_disease, bmi, hba1c, glucose]])
 console = st.empty()
 
-# Beacon Scan Prediction
+# Prediction
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
   st.subheader("📊 Biomarker Breakdown")
 
@@ -156,29 +188,29 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   ax.grid(axis=("y"), alpha=(0.2))
 
   for i, v in enumerate(values):
-    ax.text(i, v + 2, f"{v:.1f}%", ha=("center"), fontsize=(12), weight=("bold"))
+    ax.text(i, v + 2, f"{round(v,2):.2f}%", ha=("center"), fontsize=(12), weight=("bold"))
 
   st.pyplot(fig)
 
   r_live = risk_likelihood(age, glucose, hba1c, bmi)
   st.subheader("📡 Live Risk Radar")
   st.progress(r_live)
-  st.caption(f"Current system threat index: {r_live * 100:.1f}%")
+  st.caption(f"Current system threat index: {r_live * 100:.2f}%")
 
-  console.write("Calibrating hematology sensors...")
-  console.write("Reading glucose and HbA1c matrix...")
-  console.write("Firing predictive core...")
+  console.write("Calibrating sensors...")
+  console.write("Reading biomarker matrix...")
+  console.write("Running predictive core...")
 
   X_scaled = scaler.transform(X)
   result = model.predict(X_scaled)[0]
 
   if (result == 1):
-    st.error("🚨 High risk detected.")
-    console.write("A probability of insulin resistance alert.")
+    st.error("🚨 High diabetes risk detected.")
+    console.write("Insulin resistance warning likely.")
   else:
-    st.success("✅ No high risk detected.")
+    st.success("✅ No high diabetes risk detected.")
     st.balloons()
-    console.write("All vitals optimal, sir.")
+    console.write("Vitals are within optimal range, sir.")
 
 # Footer
 st.write("---")
