@@ -71,7 +71,7 @@ with st.sidebar:
   Passionate about diagnostics and preventive healthcare.
   """)
 
-# --- LANDING HEADER ---
+# Header console
 st.title("🩸 BloodBeaconPH")
 st.write("Hi, Dr. Gary Glucose at your service. I am a Machine Learning powered diabetes risk scanner configured for PH clinical trends.")
 
@@ -84,57 +84,14 @@ with st.expander("🧾 PH Medical Glossary"):
   Hypertension — high blood pressure, a diabetes risk factor.
   """)
 
-# --- DIABETES INTRODUCTION + DISTRIBUTION SELECTOR ---
-st.subheader("🧬 Study Insights")
-
-st.write("""
-Diabetes is a chronic condition where the body struggles to regulate blood sugar levels due to insulin resistance or insufficient insulin production.  
-If not detected early, it may lead to heart disease, kidney complications, nerve damage, and vascular issues.
-""")
-
-selected_dist = st.radio(
-  "Select a patient distribution to view:",
-  [
-    "Age Distribution",
-    "Blood Sugar Distribution",
-    "BMI Distribution",
-    "Gender Distribution",
-    "HbA1c Distribution",
-    "Heart Disease Distribution",
-    "Hypertension Distribution"
-  ],
-  index=0,
-  key=("radio_dist_select"),
-  horizontal=True,
-  label_visibility="visible"
-)
-
-st.write(" ")
-
-if (selected_dist == "Age Distribution"):
-  st.image("main/age_distribution.png")
-elif (selected_dist == "Blood Sugar Distribution"):
-  st.image("main/blood_sugar_distribution.png")
-elif (selected_dist == "BMI Distribution"):
-  st.image("main/bmi_distribution.png")
-elif (selected_dist == "Gender Distribution"):
-  st.image("main/gender_distribution.png")
-elif (selected_dist == "HbA1c Distribution"):
-  st.image("main/hba1c_distribution.png")
-elif (selected_dist == "Heart Disease Distribution"):
-  st.image("main/heart_disease_distribution.png")
-elif (selected_dist == "Hypertension Distribution"):
-  st.image("main/hypertension_distribution.png")
-
-st.write("---")
-
-# --- BMI CALCULATOR (NO SPINNER) ---
+# ---------- FIXED BMI CALCULATOR SECTION ----------
 st.subheader("📏 BMI Calculator")
+
 if ("bmi_calc_value" not in st.session_state):
   st.session_state.bmi_calc_value = None
 
-weight = st.number_input("Weight (kg)", min_value=(1.0), max_value=(300.0), value=(70.0), step=None, format="%.2f", key=("bmi_w"))
-height = st.number_input("Height (cm)", min_value=(30.0), max_value=(250.0), value=(170.0), step=None, format="%.2f", key=("bmi_h"))
+weight = st.number_input("Weight (kg)", min_value=(1.0), max_value=(300.0), value=(70.0), key=("bmi_w"))
+height = st.number_input("Height (cm)", min_value=(30.0), max_value=(250.0), value=(170.0), key=("bmi_h"))
 
 if (st.button("Compute BMI", key=("btn_bmi"))):
   bmi_temp = weight / ((height / 100) ** 2)
@@ -143,20 +100,17 @@ if (st.button("Compute BMI", key=("btn_bmi"))):
 
 bmi = st.session_state.bmi_calc_value
 
-# --- USER INPUTS (ALL NO SPINNER) ---
+# ----- INPUTS -----
 st.subheader("🧬 Patient Inputs")
 
 gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
-
-age = st.number_input("Age (years)", min_value=(10), max_value=(80), value=(30), step=None, key=("age_input_main"))
+age = st.number_input("Age (years)", min_value=(10), max_value=(80), value=(30), key=("age_input_main"))
 hypertension = st.selectbox("Hypertension [0=none, 1=yes]", [0,1], key=("input_htn_main"))
 heart_disease = st.selectbox("Heart Disease [0=none, 1=yes]", [0,1], key=("input_hd_main"))
-hba1c = st.number_input("HbA1c (%)", min_value=(4.0), max_value=(9.0), value=(5.5), step=None, format="%.2f", key=("input_hba1c_main"))
-glucose = st.number_input("Blood Glucose (mg/dL)", min_value=(70), max_value=(300), value=(100), step=None, key=("input_glucose_main"))
+hba1c = st.number_input("HbA1c (%)", min_value=(4.0), max_value=(9.0), value=(5.5), key=("input_hba1c_main"))
+glucose = st.number_input("Blood Glucose (mg/dL)", min_value=(70), max_value=(300), value=(100), key=("input_glucose_main"))
 
-st.write(" ")
-
-# --- METRIC PANEL ---
+# ---------- METRICS PANEL BELOW BMI CALCULATOR ----------
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Age", age)
 c2.metric("BMI", ("--" if (bmi is None) else bmi))
@@ -170,74 +124,68 @@ if (bmi is None):
 else:
   scan_ready = True
 
-# Model input matrix
+# Build model input matrix
 gender_encoded = 1 if (gender == "Male") else 0
 X = np.array([[gender_encoded, age, hypertension, heart_disease, bmi, hba1c, glucose]])
 console = st.empty()
 
-# --- TRIGGER MODAL ---
-if (st.button("💉 Predict Your Risk of Diabetes Now", key=("open_modal"), disabled=(not scan_ready))):
-  st.session_state.show_modal = True
+# Trigger prediction by button
+if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
 
-# --- MODAL OVERLAY ---
-if (st.session_state.get("show_modal", False)):
-  with st.expander("📊 Prediction Console", expanded=True):
-    st.write(" ")
+  st.subheader("📊 Biomarker Breakdown")
+  values = [age/80 * 100, bmi/40 * 100, glucose/300 * 100, hba1c/9 * 100]
+  labels = ["Age","BMI","Glucose","HbA1c"]
 
-    st.subheader("📊 Biomarker Breakdown")
-    values = [age/80 * 100, bmi/40 * 100, glucose/300 * 100, hba1c/9 * 100]
-    labels = ["Age","BMI","Glucose","HbA1c"]
+  # Color logic retained, but dynamic bars receive colors post-render
+  def bar_color(v):
+    if (v >= 90):
+      return "red"
+    if (v >= 80):
+      return "orangered"
+    if (v >= 70):
+      return "darkorange"
+    if (v >= 60):
+      return "orange"
+    return "gray"
 
-    def bar_color(v):
-      if (v >= 90):
-        return "red"
-      if (v >= 80):
-        return "orangered"
-      if (v >= 70):
-        return "darkorange"
-      if (v >= 60):
-        return "orange"
-      return "gray"
+  colors = list(map(bar_color, values))
 
-    colors = list(map(bar_color, values))
-    fig, ax = plt.subplots()
-    ax.bar(labels, values, color=None)
-    for i, bar in enumerate(ax.patches):
-      bar.set_facecolor(colors[i])
+  fig, ax = plt.subplots()
+  ax.bar(labels, values, color=None)
+  for i, bar in enumerate(ax.patches):
+    bar.set_facecolor(colors[i])
 
-    ax.set_title("PH Clinical Biomarker Levels", fontsize=(14))
-    ax.set_ylabel("Risk Contribution (%)", fontsize=(12))
-    ax.set_ylim(0, 110)
-    ax.grid(axis=("y"), alpha=0.2)
-    for i, v in enumerate(values):
-      ax.text(i, v + 2, f"{v:.1f}%", ha=("center"), fontsize=(12), weight=("bold"))
+  ax.set_title("PH Clinical Biomarker Levels", fontsize=(14))
+  ax.set_ylabel("Risk Contribution (%)", fontsize=(12))
+  ax.set_ylim(0, 110)
+  ax.grid(axis=("y"), alpha=0.2)
 
-    st.pyplot(fig)
+  for i, v in enumerate(values):
+    ax.text(i, v + 2, f"{v:.1f}%", ha=("center"), fontsize=(12), weight=("bold"))
 
-    r_live = risk_likelihood(age, glucose, hba1c, bmi)
-    st.subheader("📡 Live Risk Radar")
-    st.progress(r_live)
-    st.caption(f"Current system threat index: {r_live * 100:.1f}%")
+  st.pyplot(fig)
 
-    console.write("Calibrating hematology sensors...")
-    console.write("Reading glucose and HbA1c matrix...")
-    console.write("Firing predictive core...")
+  r_live = risk_likelihood(age, glucose, hba1c, bmi)
+  st.subheader("📡 Live Risk Radar")
+  st.progress(r_live)
+  st.caption(f"Current system threat index: {r_live * 100:.1f}%")
 
-    X_scaled = scaler.transform(X)
-    result = model.predict(X_scaled)[0]
+  console.write("Calibrating hematology sensors...")
+  console.write("Reading glucose and HbA1c matrix...")
+  console.write("Firing predictive core...")
 
-    if (result == 1):
-      st.error("🚨 High risk detected.")
-      console.write("A probability of insulin resistance alert.")
-    else:
-      st.success("✅ No high risk detected.")
-      st.balloons()
-      console.write("All vitals optimal, sir.")
+  # Model inference
+  X_scaled = scaler.transform(X)
+  result = model.predict(X_scaled)[0]
 
-    # Back button closes modal (1 click)
-    if (st.button("⬅ Return to Landing Page", key=("close_modal"))):
-      st.session_state.show_modal = False
-      st.session_state.show_modal = None
+  if (result == 1):
+    st.error("🚨 High risk detected.")
+    console.write("A probability of insulin resistance alert.")
+  else:
+    st.success("✅ No high risk detected.")
+    st.balloons()
+    console.write("All vitals optimal, sir.")
 
+# Footer
 st.write("---")
-st.caption("Diagnostics powered by Dr. Gary Glucose, BloodBeaconPH Core.")
+st.caption("Diagnostics completed by Dr. Gary Glucose from BloodBeaconPH system core.")
