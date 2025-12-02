@@ -14,7 +14,6 @@ st.set_page_config(
   initial_sidebar_state="collapsed",
 )
 
-# Background image loader
 def load_bg(path):
   with open(path, "rb") as f:
     return base64.b64encode(f.read()).decode()
@@ -22,7 +21,7 @@ def load_bg(path):
 BG_PATH = r"main/Welcome to BloodBeaconPH.png"
 bg_base64 = load_bg(BG_PATH)
 
-# Inject background + remove numeric spinner UI
+
 st.markdown(
   f"""
   <style>
@@ -72,7 +71,7 @@ st.markdown(
   unsafe_allow_html=True,
 )
 
-# 🔒 Add input restrictions (AGE = integers only, others = allow one decimal)
+
 st.markdown("""
 <script>
 document.addEventListener("input",(e)=>{
@@ -94,11 +93,11 @@ document.addEventListener("input",(e)=>{
 </script>
 """, unsafe_allow_html=True)
 
-# Load model + scaler
+
 model = joblib.load("rf_diabetes_model.pkl")
 scaler = joblib.load("scaler.pkl")
 
-# Risk heuristic
+
 def risk_likelihood(a, g, h, b):
   score = 0
   score += 1.5 if (a > 45) else 0
@@ -111,7 +110,7 @@ def risk_likelihood(a, g, h, b):
   score += 2.5 if (b > 30) else 0
   return min(score / 12, 1.0)
 
-# Sidebar profile
+
 with st.sidebar:
   st.subheader("👨‍⚕️ Physician Console")
   st.write("Dr. Gary Glucose A.I")
@@ -121,11 +120,11 @@ with st.sidebar:
   Passionate about diagnostics and preventive healthcare.
   """)
 
-# Header
+
 st.title("🩸 BloodBeaconPH")
 st.write("Dr. Gary Glucose at your service. I am a Machine Learning powered system for predicting your risk of diabetes configured for PH Clinical trends.")
 
-# PH glossary
+
 with st.expander("🧾 PH Medical Glossary"):
   st.write("""
   HbA1c — measures average blood sugar in the last 2–3 months.  
@@ -134,7 +133,7 @@ with st.expander("🧾 PH Medical Glossary"):
   Hypertension — high blood pressure, a diabetes risk factor.
   """)
 
-# Patient Profile
+
 st.subheader("🧍 Patient Profile")
 
 gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
@@ -145,7 +144,7 @@ try:
 except:
   age = 30
 
-# BMI Calculator
+
 st.subheader("📏 BMI Calculator")
 
 if ("bmi_calc_value" not in st.session_state):
@@ -171,7 +170,7 @@ if (st.button("Compute BMI", key=("btn_bmi"))):
 
 bmi = st.session_state.bmi_calc_value
 
-# Patient Biomarkers
+
 st.subheader("🧬 Patient Biomarkers")
 
 hba1c = st.text_input("HbA1c (%)", value=("5.50"))
@@ -190,26 +189,26 @@ try:
 except:
   glucose = 100.00
 
-# Metrics panel
+
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Age", f"{age}")
 c2.metric("BMI", ("--" if (bmi is None) else f"{bmi:.2f}"))
 c3.metric("Glucose", f"{glucose:.2f}")
 c4.metric("HbA1c", f"{hba1c:.2f}")
 
-# Validation
+
 scan_ready = False
 if (bmi is None):
   st.warning("🔐 Scan lock: BMI must be computed first.")
 else:
   scan_ready = True
 
-# ML input matrix
+
 gender_encoded = 1 if (gender == "Male") else 0
 X = np.array([[gender_encoded, age, hypertension, heart_disease, bmi, hba1c, glucose]])
 console = st.empty()
 
-# Scan button
+
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
   st.subheader("📊 Biomarker Breakdown")
 
@@ -261,6 +260,6 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
     st.balloons()
     console.write("All vitals optimal, sir.")
 
-# Footer
+
 st.write("---")
 st.caption("Diagnostics by Dr. Gary Glucose from BloodBeaconPH system core.")
