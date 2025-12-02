@@ -119,9 +119,10 @@ gender = st.selectbox("Gender", ["Male","Female"], key=("gender_select_main"))
 age = st.text_input("Age (years)", value=("30.00"))
 
 try:
-  age = round(float(age), 2)
+  age = int(float(age))
 except:
-  age = 30.00
+  age = 30
+
 
 # 🔶 **BMI CALCULATOR NOW HERE (AFTER gender + age)**
 st.subheader("📏 BMI Calculator")
