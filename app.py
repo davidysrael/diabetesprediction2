@@ -170,7 +170,7 @@ except:
 
 # Metrics panel
 c1, c2, c3, c4 = st.columns(4)
-c1.metric("Age", f"{age:.2f}")
+c1.metric("Age", f"{age}")
 c2.metric("BMI", ("--" if (bmi is None) else f"{bmi:.2f}"))
 c3.metric("Glucose", f"{glucose:.2f}")
 c4.metric("HbA1c", f"{hba1c:.2f}")
