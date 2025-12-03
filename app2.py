@@ -102,7 +102,7 @@ with st.sidebar:
   Specialized in glucose pattern recognition and chronic illness risk assessment.  
   Passionate about diagnostics and preventive healthcare.
   """)
-  
+
 # =========================================================
 # PATIENT PROFILE — UPDATED INPUTS
 # =========================================================
@@ -199,6 +199,12 @@ c1.metric("Age", f"{age}")
 c2.metric("BMI", ("--" if (bmi is None) else f"{bmi:.2f}"))
 c3.metric("Glucose", f"{glucose:.2f}")
 c4.metric("DPF", f"{dpf:.2f}")
+
+c5, c6, c7, c8 = st.columns(4)
+c5.metric("Pregnancies", f"{pregnancies}")
+c6.metric("BloodPressure (mmHg)", f"{bp}")
+c7.metric("SkinThickness (mm)", f"{skin}")
+c8.metric("Insulin (µU/mL)", f"{insulin}")
 
 scan_ready = bmi is not None
 console = st.empty()
