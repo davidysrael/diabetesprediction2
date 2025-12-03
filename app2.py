@@ -88,9 +88,7 @@ document.addEventListener("input",(e)=>{
 """, unsafe_allow_html=True)
 
 
-# =========================================================
-# LOAD MODEL (NO SCALER)
-# =========================================================
+
 model = joblib.load("gbdt_diabetes_model2.pkl")
 
 
@@ -103,26 +101,32 @@ with st.sidebar:
   Passionate about diagnostics and preventive healthcare.
   """)
 
-# =========================================================
-# PATIENT PROFILE — UPDATED INPUTS
-# =========================================================
+
 st.title("🩸 BloodBeaconPH")
 st.write("Dr. Gary Glucose at your service. I am a Machine Learning powered system for predicting your risk of diabetes configured for PH Clinical trends.")
 
 with st.expander("🧾 PH Medical Glossary"):
   st.write("""
-  DPF — Diabetes Pedigree Function  
-  Glucose mg/dL — sugar level  
-  BloodPressure — arterial pressure  
-  SkinThickness — triceps fold thickness  
-  Insulin — fasting insulin  
-  BMI — weight-to-height ratio  
+    Diabetes Pedigree Function (DPF)
+    - A score that estimates the likelihood of a person having diabetes based on their family history and age.
+
+    Glucose (mg/dL)
+    - The concentration of sugar in the blood. It is one of the most important indicators of diabetes risk.
+
+    BloodPressure
+    - The arterial pressure exerted by blood against the walls of the arteries. Abnormal levels may indicate metabolic or cardiovascular issues linked to diabetes.
+
+    SkinThickness
+    - The thickness of the triceps skinfold, used as an indirect measure of body fat and insulin resistance.
+
+    Insulin
+    - The amount of fasting insulin present in the bloodstream. Abnormal insulin levels may signal insulin resistance or impaired glucose regulation.
+
+    BMI (Body Mass Index)
+    - The weight-to-height ratio used to estimate overall body fat. Higher BMI is strongly associated with increased diabetes risk. 
   """)
 
 
-# -------------------------------
-# PATIENT PROFILE (NEW)
-# -------------------------------
 st.subheader("🧍 Patient Profile")
 
 age = st.text_input("Age (years)   [max: 80]", value=("30"))
@@ -132,9 +136,7 @@ except:
   age = 30
 
 
-# -------------------------------
-# PATIENT BIOMARKERS (NEW INPUTS)
-# -------------------------------
+
 st.subheader("🧬 Patient Biomarkers")
 
 pregnancies = st.text_input("Pregnancies   [max: 17]", value=("0"))
@@ -142,9 +144,9 @@ glucose = st.text_input("Glucose (mg/dL)   [max: 200]", value=("100.00"))
 bp = st.text_input("BloodPressure (mmHg)   [max: 122]", value=("70.00"))
 skin = st.text_input("SkinThickness (mm)   [max: 99]", value=("20.00"))
 insulin = st.text_input("Insulin (µU/mL)   [max: 845]", value=("79"))
-dpf = st.text_input("DPF (0.00 format)   [max: 2.42]", value=("0.50"))
+dpf = st.text_input("Diabetes Pedigree Function (0.00 format)   [max: 2.42]", value=("0.50"))
 
-# Parse safely
+
 try: pregnancies = int(float(pregnancies))
 except: pregnancies = 0
 
@@ -165,9 +167,6 @@ except: dpf = 0.50
 
 
 
-# =========================================================
-# BMI CALCULATOR (UNCHANGED)
-# =========================================================
 st.subheader("📏 BMI Calculator")
 
 if ("bmi_calc_value" not in st.session_state):
@@ -191,13 +190,10 @@ bmi = st.session_state.bmi_calc_value
 
 
 
-# =========================================================
-# NEW METRICS (Age, BMI, Glucose, DPF)
-# =========================================================
 c1, c2, c3, c4 = st.columns(4)
 c1.metric("Age", f"{age}")
 c2.metric("BMI", ("--" if (bmi is None) else f"{bmi:.2f}"))
-c3.metric("Glucose", f"{glucose:.2f}")
+c3.metric("Glucose (mg/dL)", f"{glucose:.2f}")
 c4.metric("DPF", f"{dpf:.2f}")
 
 c5, c6, c7, c8 = st.columns(4)
@@ -211,9 +207,6 @@ console = st.empty()
 
 
 
-# =========================================================
-# INITIATE SCAN — NEW RISK SYSTEM
-# =========================================================
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
 
   st.subheader("📊 Biomarker Breakdown (PH Risk %)")
@@ -267,7 +260,7 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   plt.tight_layout()
   st.pyplot(fig)
 
-  # Live Radar Score
+  
   r_live = np.mean(values) / 100
   st.subheader("📡 Live Risk Radar (PH Clinical Index)")
   st.progress(r_live)
@@ -277,10 +270,10 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   console.write("Reading glucose and biomarker matrix...")
   console.write("Firing predictive core...")
 
-  # NEW ML INPUT ORDER (NO SCALING)
+
   X = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, dpf, age]])
 
-  result = model.predict(X)[0]   # 💥 Direct prediction (no scaler)
+  result = model.predict(X)[0]   
 
   if (result == 1):
     st.error("🚨 High diabetes risk detected.")
