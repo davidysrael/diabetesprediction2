@@ -212,9 +212,65 @@ console = st.empty()
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
   st.subheader("📊 Biomarker Breakdown")
 
-  values = [age/80 * 100, bmi/40 * 100, glucose/300 * 100, hba1c/9 * 100]
-  labels = ["Age","BMI","Glucose","HbA1c"]
+  # -------------------------------
+  # 🔬 PH-ADAPTED FINDRISC SCORING
+  # -------------------------------
 
+  # 1. AGE (0–6)
+  if age < 35: age_pts = 0
+  elif age < 45: age_pts = 2
+  elif age < 55: age_pts = 4
+  else: age_pts = 6
+
+  # 2. BMI (0–4)
+  if bmi is None:
+    bmi_pts = 0
+  elif bmi < 23: bmi_pts = 0
+  elif bmi < 25: bmi_pts = 1
+  elif bmi < 30: bmi_pts = 2
+  else: bmi_pts = 4
+
+  # 3. HYPERTENSION (0–3)
+  htn_pts = 3 if hypertension == 1 else 0
+
+  # 4. HEART DISEASE (0–3)
+  heart_pts = 3 if heart_disease == 1 else 0
+
+  # 5. GLUCOSE (0–6)
+  if glucose < 100: glu_pts = 0
+  elif glucose < 126: glu_pts = 3
+  else: glu_pts = 6
+
+  # 6. HBA1C (0–6)
+  if hba1c < 5.7: a1c_pts = 0
+  elif hba1c < 6.5: a1c_pts = 3
+  else: a1c_pts = 6
+
+  # 7. SEX (0–1)
+  sex_pts = 1 if gender == "Male" else 0
+
+  # FOR BAR CHART VISUALIZATION (percent per category)
+  values = [
+    (age_pts / 6) * 100,
+    (bmi_pts / 4) * 100,
+    (glu_pts / 6) * 100,
+    (a1c_pts / 6) * 100,
+    (htn_pts / 3) * 100,
+    (heart_pts / 3) * 100,
+    (sex_pts / 1) * 100,
+  ]
+
+  labels = [
+    "Age",
+    "BMI",
+    "Glucose",
+    "HbA1c",
+    "Hypertension",
+    "Heart Dx",
+    "Sex"
+  ]
+
+  # COLOR BASED ON RANGE
   def bar_color(v):
     if (v >= 90): return "red"
     if (v >= 80): return "orangered"
@@ -224,6 +280,9 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
 
   colors = list(map(bar_color, values))
 
+  # -------------------------------
+  # 📊 DRAW FINDRISC BAR CHART
+  # -------------------------------
   fig, ax = plt.subplots()
   ax.bar(labels, values)
 
@@ -240,8 +299,13 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
 
   st.pyplot(fig)
 
-  r_live = risk_likelihood(age, glucose, hba1c, bmi)
-  st.subheader("📡 Live Risk Radar")
+  # -------------------------------
+  # 📡 RADAR: FINDRISC → 0–29 scale
+  # -------------------------------
+  total_findrisc = age_pts + bmi_pts + glu_pts + a1c_pts + htn_pts + heart_pts + sex_pts
+  r_live = total_findrisc / 29  # scale 0–1
+
+  st.subheader("📡 Live Risk Radar (PH Clinical Index)")
   st.progress(r_live)
   st.caption(f"Current system threat index: {r_live * 100:.1f}%")
 
