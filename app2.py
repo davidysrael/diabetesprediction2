@@ -74,13 +74,11 @@ document.addEventListener("input",(e)=>{
   const t=e.target;
   if(t.tagName==="INPUT" && t.type==="text"){
 
-      // AGE strictly integer-only
       if(t.placeholder.includes("Age")){
           t.value = t.value.replace(/[^0-9]/g,"");
           return;
       }
 
-      // Others: allow digits + single decimal
       t.value = t.value
         .replace(/[^0-9.]/g,"")
         .replace(/\\.(?=.*\\.)/g,"");
@@ -91,10 +89,9 @@ document.addEventListener("input",(e)=>{
 
 
 # =========================================================
-# LOAD NEW MODEL
+# LOAD MODEL (NO SCALER)
 # =========================================================
 model = joblib.load("gbdt_diabetes_model.pkl")
-scaler = joblib.load("scaler.pkl")  # keep scaler unchanged
 
 
 
@@ -216,7 +213,7 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
     (skin / 99) * 100,
     (insulin / 845) * 100,
     (dpf / 2.42) * 100,
-    (bmi / 60) * 100  # BMI typically up to 60 clinically
+    (bmi / 60) * 100
   ]
 
   labels = [
@@ -266,11 +263,10 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   console.write("Reading glucose and biomarker matrix...")
   console.write("Firing predictive core...")
 
-  # NEW ML INPUT ORDER
+  # NEW ML INPUT ORDER (NO SCALING)
   X = np.array([[pregnancies, glucose, bp, skin, insulin, bmi, dpf, age]])
-  X_scaled = scaler.transform(X)
 
-  result = model.predict(X_scaled)[0]
+  result = model.predict(X)[0]   # 💥 Direct prediction (no scaler)
 
   if (result == 1):
     st.error("🚨 High diabetes risk detected.")
