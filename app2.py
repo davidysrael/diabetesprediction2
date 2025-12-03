@@ -103,9 +103,9 @@ with st.sidebar:
 
 
 st.title("🩸 BloodBeaconPH")
-st.write("Dr. Gary Glucose at your service. I am a Machine Learning powered system for predicting your risk of diabetes configured for PH Clinical trends.")
+st.write("Dr. Gary Glucose at your service. I am a Machine Learning powered system for predicting your risk of diabetes configured for Clinical trends.")
 
-with st.expander("🧾 PH Medical Glossary"):
+with st.expander("🧾 Medical Glossary"):
   st.write("""
     Diabetes Pedigree Function (DPF)
     - A score that estimates the likelihood of a person having diabetes based on their family history and age.
@@ -209,7 +209,7 @@ console = st.empty()
 
 if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not scan_ready))):
 
-  st.subheader("📊 Biomarker Breakdown (PH Risk %)")
+  st.subheader("📊 Biomarker Breakdown ( Risk %)")
 
   # Convert into % risk relative to maximum allowed values
   values = [
@@ -249,7 +249,7 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   for i, bar in enumerate(ax.patches):
     bar.set_facecolor(colors[i])
 
-  ax.set_title("PH Clinical Biomarker Levels", fontsize=14)
+  ax.set_title(" Clinical Biomarker Levels", fontsize=14)
   ax.set_ylabel("Risk Contribution (%)", fontsize=12)
   ax.set_ylim(0, 110)
   ax.grid(axis=("y"), alpha=0.2)
@@ -262,7 +262,7 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
 
   
   r_live = np.mean(values) / 100
-  st.subheader("📡 Live Risk Radar (PH Clinical Index)")
+  st.subheader("📡 Live Risk Radar (Clinical Index)")
   st.progress(r_live)
   st.caption(f"Current system threat index: {r_live * 100:.1f}%")
 
