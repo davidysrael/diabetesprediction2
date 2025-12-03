@@ -18,7 +18,7 @@ def load_bg(path):
   with open(path, "rb") as f:
     return base64.b64encode(f.read()).decode()
 
-BG_PATH = r"main2/Welcome to BloodBeaconPH.png"
+BG_PATH = r"main/Welcome to BloodBeaconPH.png"
 bg_base64 = load_bg(BG_PATH)
 
 st.markdown(
