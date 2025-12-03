@@ -91,7 +91,7 @@ document.addEventListener("input",(e)=>{
 # =========================================================
 # LOAD MODEL (NO SCALER)
 # =========================================================
-model = joblib.load("gbdt_diabetes_model.pkl")
+model = joblib.load("gbdt_diabetes_model2.pkl")
 
 
 
