@@ -94,7 +94,15 @@ document.addEventListener("input",(e)=>{
 model = joblib.load("gbdt_diabetes_model2.pkl")
 
 
-
+with st.sidebar:
+  st.subheader("👨‍⚕️ Physician Console")
+  st.write("Dr. Gary Glucose A.I")
+  st.caption("Endocrinologist • PH Biomarker Specialist")
+  st.write("""
+  Specialized in glucose pattern recognition and chronic illness risk assessment.  
+  Passionate about diagnostics and preventive healthcare.
+  """)
+  
 # =========================================================
 # PATIENT PROFILE — UPDATED INPUTS
 # =========================================================
