@@ -265,7 +265,7 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   colors = list(map(bar_color, values))
 
  
-  fig, ax = plt.subplots()
+  fig, ax = plt.subplots(figsize=(12, 6))
   ax.bar(labels, values)
 
   for i, bar in enumerate(ax.patches):
@@ -279,6 +279,8 @@ if (st.button("🔍 Initiate Beacon Scan", key=("btn_predict"), disabled=(not sc
   for i, v in enumerate(values):
     ax.text(i, v + 2, f"{v:.1f}%", ha=("center"), fontsize=(12), weight=("bold"))
 
+  plt.tight_layout()
+  
   st.pyplot(fig)
 
 
